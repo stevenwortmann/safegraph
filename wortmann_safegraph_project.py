@@ -13,9 +13,6 @@ def wait_to_continue():
 	input("Press enter to continue...")
 	os.system('clear')
 
-
-
-
 def initialize_table():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
@@ -164,9 +161,6 @@ def insert_record():
 	print("ID generated was " + str(lid))
 	wait_to_continue()
 
-
-
-
 def delete_record():
 	print("Running the delete routine...")
 	sql="SELECT * FROM locations;"
@@ -188,10 +182,6 @@ def delete_record():
 	cur.close
 	conn.close
 	wait_to_continue()
-
-
-
-
 
 def update_record():
 	print("Running the update routine...")
