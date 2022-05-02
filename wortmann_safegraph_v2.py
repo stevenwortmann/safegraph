@@ -1,4 +1,4 @@
-cityimport psycopg2
+import psycopg2
 import psycopg2.extras
 import os
 import csv
@@ -348,7 +348,7 @@ def run_csv_import():
 				normalized_visits_by_total_visitors=row[43]
 				if normalized_visits_by_total_visitors=='':
 					normalized_visits_by_total_visitors=None
-					
+
 				if placekey!=None and date_range_start!=None:
 					print("Read: " + placekey.ljust(20,' ') + location_name.ljust(30,' ') + naics_code.ljust(30,' ') + city.ljust(15,' ') + region.ljust(2,' ') + street_address.ljust(6,' ') + date_range_start.ljust(10,' ') + raw_visitor_count.rjust(5,' '))
 					cur.execute('CALL addrecdb2(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
