@@ -19,7 +19,7 @@ def wait_to_continue():
 def initialize_table():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
-	sql1 = """DROP TABLE IF EXISTS visits_info,location_info,brands_info,naics_codes;
+	sql1 = ('''DROP TABLE IF EXISTS visits_info,location_info,brands_info,naics_codes;
 
 	CREATE TABLE naics_codes (
 		nid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -30,7 +30,7 @@ def initialize_table():
 
 	CREATE TABLE brands_info (
 		bid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-		safegraph_brand_ids VARCHAR(100) NOT NULL,
+		safegraph_brand_ids VARCHAR(100),
 		brands VARCHAR(100),
 		nid INT REFERENCES naics_codes (nid) ON DELETE CASCADE
 		);
@@ -43,16 +43,16 @@ def initialize_table():
 		raw_visit_counts INT,
 		raw_visitor_counts INT,
 		visits_by_day VARCHAR(100),
-		visits_by_each_hour VARCHAR(1000),
-		visitor_home_cbgs VARCHAR(1000),
-		visitor_home_aggregation VARCHAR(1000),
-		visitor_daytime_cbgs VARCHAR(1000),
+		visits_by_each_hour VARCHAR(10000),
+		visitor_home_cbgs VARCHAR(10000),
+		visitor_home_aggregation VARCHAR(10000),
+		visitor_daytime_cbgs VARCHAR(10000),
 		visitor_country_of_origin VARCHAR(100),
 		distance_from_home INT,
-		median_dwell INT,
-		bucketed_dwell_times VARCHAR(1000),
-		related_same_day_brand VARCHAR(1000),
-		related_same_week_brand VARCHAR(1000),
+		median_dwell FLOAT,
+		bucketed_dwell_times VARCHAR(10000),
+		related_same_day_brand VARCHAR(10000),
+		related_same_week_brand VARCHAR(10000),
 		device_type VARCHAR(100),
 		normalized_visits_by_state_scaling FLOAT,
 		normalized_visits_by_region_naics_visits FLOAT,
@@ -116,17 +116,17 @@ def initialize_table():
 		y_rvt INT,
 		z_rvr INT,
 		aa_vbd VARCHAR(100),
-		ab_vbh VARCHAR(1000),
+		ab_vbh VARCHAR(10000),
 		ac_cbg VARCHAR(20),
-		ad_vhc VARCHAR(1000),
-		ae_vha VARCHAR(1000),
-		af_vdc VARCHAR(1000),
+		ad_vhc VARCHAR(10000),
+		ae_vha VARCHAR(10000),
+		af_vdc VARCHAR(10000),
 		ag_vco VARCHAR(100),
 		ah_dfh INT,
-		ai_md INT,
-		aj_bdt VARCHAR(1000),
-		ak_rsd VARCHAR(1000),
-		al_rsw VARCHAR(1000),
+		ai_md FLOAT,
+		aj_bdt VARCHAR(10000),
+		ak_rsd VARCHAR(10000),
+		al_rsw VARCHAR(10000),
 		am_dt VARCHAR(100),
 		an_nvss FLOAT,
 		ao_nvrnt FLOAT,
@@ -158,7 +158,7 @@ def initialize_table():
 			END IF;
 
 		IF (SELECT COUNT(*) FROM naics_codes WHERE naics_code=h_nc)=1 THEN
-				SELECT nid INTO nidout FROM naics_codes WHERE naics_code=nc;
+				SELECT nid INTO nidout FROM naics_codes WHERE naics_code=h_nc;
 			ELSE
 				INSERT INTO naics_codes(top_category,sub_category,naics_code)
 				VALUES (f_tc,g_sc,h_nc);
@@ -166,7 +166,7 @@ def initialize_table():
 			END IF;
 
 		IF (SELECT COUNT(*) FROM brands_info WHERE safegraph_brand_ids=d_sbid)=1 THEN
-				SELECT bid INTO bidout FROM naics_codes WHERE safegraph_brand_ids=d_sbid;
+				SELECT bid INTO bidout FROM brands_info WHERE safegraph_brand_ids=d_sbid;
 			ELSE
 				INSERT INTO brands_info(safegraph_brand_ids,brands,nid)
 				VALUES (d_sbid,e_bds,nidout);
@@ -196,8 +196,8 @@ def initialize_table():
 	'{"39119911700":7,"39119912100":5,"47093005808":4,"39119912400":4,"39119911500":4,"39089757400":4,"39119911300":4,"39119912000":4,"39089754101":4,"39119911200":4,"39119912300":4,"39119912800":4,"39083006801":4,"39119911100":4,"39089758900":4,"39119911600":4,"39119912700":4}',
 	'{"391199112004":5,"391130005005":4,"391199128002":4,"390830068013":4,"390830072002":4,"391199111003":4,"390897589006":4,"391199117001":4,"390450329004":4,"391199116003":4,"391199117003":4,"391199115004":4,"470930058082":4,"391199124003":4,"391199127001":4}',
 	'{"US":72}','9064','45','{"<5":1,"5-10":22,"11-20":3,"21-60":43,"61-120":23,"121-240":4,">240":19}',
-	'{"Country Fair":16,"McDonald's":14,"Walmart":12,"Taco Bell":9,"Duchess":8,"Tim Hortons":8,"BP":6,"Wendy's":6,"KFC":5,"Speedway":5,"Dairy Queen":5,"Kroger":4,"The Home Depot":4,"GameStop":4,"Marathon":4,"Subway":4,"Smoker Friendly":3,"Lowe's":3,"Starbucks":3,"Sheetz":3}',
-	'{"Walmart":40,"McDonald's":39,"Country Fair":32,"Kroger":28,"BP":25,"Sheetz":23,"Subway":23,"Duchess":21,"Taco Bell":17,"Speedway":16,"Dollar General":16,"Dairy Queen":16,"Wendy's":12,"CVS":12,"Tim Hortons":12,"Marathon":12,"KFC":11,"Arby's":11,"Smoker Friendly":9,"Lowe's":9}',
+	'{"Country Fair":16,"McDonalds":14,"Walmart":12,"Taco Bell":9,"Duchess":8,"Tim Hortons":8,"BP":6,"Wendys":6,"KFC":5,"Speedway":5,"Dairy Queen":5,"Kroger":4,"The Home Depot":4,"GameStop":4,"Marathon":4,"Subway":4,"Smoker Friendly":3,"Lowes":3,"Starbucks":3,"Sheetz":3}',
+	'{"Walmart":40,"McDonalds":39,"Country Fair":32,"Kroger":28,"BP":25,"Sheetz":23,"Subway":23,"Duchess":21,"Taco Bell":17,"Speedway":16,"Dollar General":16,"Dairy Queen":16,"Wendys":12,"CVS":12,"Tim Hortons":12,"Marathon":12,"KFC":11,"Arbys":11,"Smoker Friendly":9,"Lowes":9}',
 	'{"android":27,"ios":47}','1319.3152211025','0.0000580570','0.0000730162','0.0000066229','0.0000154705');
 
 	call addrecdb2('222-222@63d-kqz-49z','','Burger King','SG_BRAND_60d8d6d29e2c4b14f4ea1983baefd36e','Burger King','Restaurants and Other Eating Places','Limited-Service Restaurants',
@@ -209,15 +209,15 @@ def initialize_table():
 	'{"42021013300":9,"42021010300":8,"42021010700":7,"42021011900":4,"42021010500":4,"42021013200":4,"42021010100":4,"42021010801":4,"42021010600":4,"42111020200":4,"42021000700":4,"42021013600":4,"42111020400":4,"42111020102":4,"42021013100":4,"42021013500":4}',
 	'{"420210107001":5,"420210133004":4,"420210132004":4,"420210136002":4,"420210129002":4,"420210101002":4,"421110203003":4,"420210131001":4,"420210103001":4,"420210133003":4,"420210002002":4,"420210125003":4,"420210114004":4,"420210133002":4,"420210136003":4,"420210135001":4,"420210120005":4,"340130028001":4,"420210137001":4,"421110215001":4,"420210105002":4,"421110204001":4,"420210007003":4}',
 	'{"US":83}','7756','11','{"<5":7,"5-10":39,"11-20":26,"21-60":17,"61-120":2,"121-240":5,">240":2}',
-	'{"Sheetz":30,"Walmart":10,"ALDI":10,"Taco Bell":9,"Cricket Wireless":8,"Dollar General":6,"Rite Aid":5,"AT&T":4,"T.J. Maxx":3,"Primanti Bros.":3,"Dairy Queen":3,"McDonald's":3,"Subway":3,"Dollar Tree":3,"Kawasaki Motors":2,"Ross Stores":2,"KFC":2,"Starbucks":2,"Big Lots Stores":2,"United States Postal Service (USPS)":2}',
-	'{"Sheetz":66,"Walmart":45,"McDonald's":30,"Dollar General":29,"Dairy Queen":16,"Sunoco":16,"Subway":16,"ALDI":14,"Cricket Wireless":14,"Rite Aid":13,"Family Dollar Stores":13,"Taco Bell":12,"T.J. Maxx":11,"Dollar Tree":11,"AT&T":8,"Perkins Restaurant & Bakery":8,"Arby's":8,"IGA":7,"Primanti Bros.":7,"Wendy's":7}',
+	'{"Sheetz":30,"Walmart":10,"ALDI":10,"Taco Bell":9,"Cricket Wireless":8,"Dollar General":6,"Rite Aid":5,"AT&T":4,"T.J. Maxx":3,"Primanti Bros.":3,"Dairy Queen":3,"McDonalds":3,"Subway":3,"Dollar Tree":3,"Kawasaki Motors":2,"Ross Stores":2,"KFC":2,"Starbucks":2,"Big Lots Stores":2,"United States Postal Service (USPS)":2}',
+	'{"Sheetz":66,"Walmart":45,"McDonalds":30,"Dollar General":29,"Dairy Queen":16,"Sunoco":16,"Subway":16,"ALDI":14,"Cricket Wireless":14,"Rite Aid":13,"Family Dollar Stores":13,"Taco Bell":12,"T.J. Maxx":11,"Dollar Tree":11,"AT&T":8,"Perkins Restaurant & Bakery":8,"Arbys":8,"IGA":7,"Primanti Bros.":7,"Wendys":7}',
 	'{"android":40,"ios":41}','1289.8365329770','0.0000671073','0.0000870675','0.0000066811','0.0000185553');
 
-	SELECT 'location_info',count(*) as 'Record Count' FROM FROM location_info UNION ALL
-	SELECT 'brands_info',count(*) as 'Record Count' FROM brands_info UNION ALL
-	SELECT 'naics_codes',count(*) as 'Record Count' FROM naics_codes UNION ALL
-	SELECT 'visits_info',count(*) as 'Record Count' FROM visits_info;
-	"""
+	SELECT 'location_info',count(*) as Record_Count FROM location_info UNION ALL
+	SELECT 'brands_info',count(*) as Record_Count FROM brands_info UNION ALL
+	SELECT 'naics_codes',count(*) as Record_Count FROM naics_codes UNION ALL
+	SELECT 'visits_info',count(*) as Record_Count FROM visits_info;
+	''')
 
 	cur.execute(sql1)
 	conn.commit()
@@ -231,7 +231,7 @@ def run_csv_import():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
 
-	with open('/var/lib/postgresql/scripts/Book2.csv','r') as read_obj:
+	with open('/var/lib/postgresql/scripts/safegraph/Book2.csv','r') as read_obj:
 		# pass the file object to reader() to get the reader object
 		csv_reader = reader(read_obj)
 		header=next(csv_reader)
@@ -350,7 +350,7 @@ def run_csv_import():
 					normalized_visits_by_total_visitors=None
 
 				if placekey!=None and date_range_start!=None:
-					print("Read: " + placekey.ljust(20,' ') + location_name.ljust(30,' ') + naics_code.ljust(30,' ') + city.ljust(15,' ') + region.ljust(2,' ') + street_address.ljust(6,' ') + date_range_start.ljust(10,' ') + raw_visitor_count.rjust(5,' '))
+					print("Read: " + placekey.ljust(21,' ') + location_name[:25].ljust(30,' ') + street_address[:18].ljust(20,' ') + city[:14].ljust(15,' ') + region.ljust(4,' ') + postal_code.ljust(7,' ') + latitude.rjust(12,' ') + longitude.rjust(12,' ') + naics_code.rjust(10,' '))
 					cur.execute('CALL addrecdb2(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
 					(placekey,parent_placekey,location_name,safegraph_brand_ids,brands,top_category,sub_category,naics_code,
 					latitude,longitude,street_address,city,region,postal_code,iso_country_code,phone_number,open_hours,category_tags,
@@ -360,6 +360,13 @@ def run_csv_import():
 					related_same_week_brand,device_type,normalized_visits_by_state_scaling,normalized_visits_by_region_naics_visits,
 					normalized_visits_by_region_naics_visitors,normalized_visits_by_total_visits,normalized_visits_by_total_visitors));
 
+	sql1 = ('''SELECT 'location_info',count(*) as Record_Count FROM location_info UNION ALL
+	SELECT 'brands_info',count(*) as Record_Count FROM brands_info UNION ALL
+	SELECT 'naics_codes',count(*) as Record_Count FROM naics_codes UNION ALL
+	SELECT 'visits_info',count(*) as Record_Count FROM visits_info;
+	''')
+
+	cur.execute(sql1)
 	conn.commit()
 	cur.close()
 	conn.close
@@ -369,7 +376,7 @@ def run_csv_import():
 
 def run_select():
 	print("Running the select routine!")
-	sql="SELECT v.placekey,n.naics_code,l.latitude,l.longitude,substring(date_range_start,1,10) date_range_start,raw_visitor_count FROM visits_info v JOIN location_info l ON v.vid=l.vid AND v.placekey=l.placekey JOIN naics_codes n ON l.nid=n.nid;"
+	sql="SELECT v.placekey,n.naics_code,l.latitude,l.longitude,substring(date_range_start,1,10) date_range_start,raw_visitor_counts FROM visits_info v JOIN location_info l ON v.vid=l.vid AND v.placekey=l.placekey JOIN naics_codes n ON l.nid=n.nid;"
 	conn=psycopg2.connect(connstring)
 #	cur=conn.cursor()
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -381,7 +388,7 @@ def run_select():
 	else:
 		while row is not None:
 			print(row['placekey'].ljust(20,' ') + row['naics_code'].ljust(7,' ') + row['latitude'].ljust(11,' ') +
-			row['longitude'].ljust(11,' ') + row['date_range_start'].ljust(10,' ') + str(row['raw_visitor_count']).ljust(5,' '))
+			row['longitude'].ljust(11,' ') + row['date_range_start'].ljust(10,' ') + str(row['raw_visitor_counts']).ljust(5,' '))
 			row=cur.fetchone()
 	cur.close
 	conn.close
@@ -400,7 +407,7 @@ def output_save_csv():
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute(sql)
 	row=cur.fetchone();
-	with open('/var/lib/postgresql/scripts/Locations_records.csv','w',newline='') as csvfile:
+	with open('/var/lib/postgresql/scripts/safegraph/Locations_records.csv','w',newline='') as csvfile:
 		fieldnames = ['Location','Top_Category','Sub_Category','Address','City','State','Zip_Code','Week_Of','Number_Visitors']
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writeheader()
@@ -412,7 +419,7 @@ def output_save_csv():
 				'City':row['city'],'State':row['region'],'Zip_Code':row['street_address'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_count']})
 				print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_count']))
 				row=cur.fetchone()
-			print("\nWritten record(s) to: /var/lib/postgresql/scripts/Locations_records.csv\n")
+			print("\nWritten record(s) to: /var/lib/postgresql/scripts/safegraph/Locations_records.csv\n")
 	cur.close
 	conn.close
 	wait_to_continue()
