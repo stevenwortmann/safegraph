@@ -1,4 +1,4 @@
-import psycopg2
+cityimport psycopg2
 import psycopg2.extras
 import os
 import csv
@@ -71,10 +71,10 @@ def initialize_table():
 		bid INT REFERENCES brands_info (bid) ON DELETE CASCADE,
 		latitude VARCHAR(15) NOT NULL,
 		longitude VARCHAR(15) NOT NULL,
-		street_address VARCHAR(100) NOT NULL,
+		naics_code VARCHAR(100) NOT NULL,
 		city VARCHAR(50) NOT NULL,
 		region VARCHAR(5) NOT NULL,
-		postal_code VARCHAR(10) NOT NULL,
+		street_address VARCHAR(10) NOT NULL,
 		iso_country_code VARCHAR(10),
 		phone_number VARCHAR(20),
 		open_hours VARCHAR(1000),
@@ -177,7 +177,7 @@ def initialize_table():
 				SELECT locid INTO locidout FROM location_info WHERE placekey=a_pk;
 			ELSE
 				INSERT INTO location_info(placekey,parent_placekey,location_name,vid,nid,bid,latitude,longitude,
-					street_address,city,region,postal_code,iso_country_code,phone_number,open_hours,category_tags,
+					naics_code,city,region,street_address,iso_country_code,phone_number,open_hours,category_tags,
 					opened_on,closed_on,tracking_closed_since,geometry_type,poi_cbg)
 				VALUES (a_pk,b_ppk,c_lo,vidout,nidout,bidout,i_lt,j_lg,k_sa,l_ci,m_rg,n_pc,
 						o_cy,p_pn,q_op,r_ct,s_oo,t_co,u_ts,v_gt,ac_cbg);
@@ -231,61 +231,134 @@ def run_csv_import():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
 
-	with open('/var/lib/postgresql/scripts/Book1.csv','r') as read_obj:
+	with open('/var/lib/postgresql/scripts/Book2.csv','r') as read_obj:
 		# pass the file object to reader() to get the reader object
 		csv_reader = reader(read_obj)
 		header=next(csv_reader)
 		for row in csv_reader:
 			#print(len(row))
-			if len(row)>14:
+			if len(row)>43:
 				placekey=row[0]
-				location_name=row[1]
-				if location_name=='':
-					location_name=None
-				top_category=row[2]
-				if top_category=='':
-					top_category=None
-				sub_category=row[3]
+				parent_placekey=row[1]
+				if parent_placekey=='':
+					parent_placekey=None
+				location_name=row[2]
+				safegraph_brand_ids=row[3]
+				if safegraph_brand_ids=='':
+					safegraph_brand_ids=None
+				brands=row[4]
+				if brands=='':
+					brands=None
+				top_category=row[5]
+				sub_category=row[6]
 				if sub_category=='':
 					sub_category=None
-				naics_code=row[4]
-				if naics_code=='':
-					naics_code=None
-				latitude=row[5]
-				if latitude=='':
-					latitude=None
-				longitude=row[6]
-				if longitude=='':
-					longitude=None
-				street_address=row[7]
-				if street_address=='':
-					street_address=None
-				city=row[8]
-				if city=='':
-					city=None
-				region=row[9]
-				if region=='':
-					region=None
-				postal_code=row[10]
-				if postal_code=='':
-					postal_code=None
-				phone_number=row[11]
+				naics_code=row[7]
+				latitude=row[8]
+				longitude=row[9]
+				street_address=row[10]
+				city=row[11]
+				region=row[12]
+				postal_code=row[13]
+				iso_country_code=row[14]
+				phone_number=row[15]
 				if phone_number=='':
 					phone_number=None
-				date_range_start=row[12]
+				open_hours=row[16]
+				if open_hours=='':
+					open_hours=None
+				category_tags=row[17]
+				if category_tags=='':
+					category_tags=None
+				opened_on=row[18]
+				if opened_on=='':
+					opened_on=None
+				closed_on=row[19]
+				if closed_on=='':
+					closed_on=None
+				tracking_closed_since=row[20]
+				if tracking_closed_since=='':
+					tracking_closed_since=None
+				geometry_type=row[21]
+				if geometry_type=='':
+					geometry_type=None
+				date_range_start=row[22]
 				if date_range_start=='':
 					date_range_start=None
-				date_range_end=row[13]
+				date_range_end=row[23]
 				if date_range_end=='':
 					date_range_end=None
-				raw_visitor_count=row[14]
-				if raw_visitor_count=='':
-					raw_visitor_count=None
+				raw_visit_counts=row[24]
+				if raw_visit_counts=='':
+					raw_visit_counts=None
+				raw_visitor_counts=row[25]
+				if raw_visitor_counts=='':
+					raw_visitor_counts=None
+				visits_by_day=row[26]
+				if visits_by_day=='':
+					visits_by_day=None
+				visits_by_hour=row[27]
+				if visits_by_hour=='':
+					visits_by_hour=None
+				poi_cbg=row[28]
+				if poi_cbg=='':
+					poi_cbg=None
+				visitor_home_cbgs=row[29]
+				if visitor_home_cbgs=='':
+					visitor_home_cbgs=None
+				visitor_home_aggregation=row[30]
+				if visitor_home_aggregation=='':
+					visitor_home_aggregation=None
+				visitor_daytime_cbgs=row[31]
+				if visitor_daytime_cbgs=='':
+					visitor_daytime_cbgs=None
+				visitor_country_of_origin=row[32]
+				if visitor_country_of_origin=='':
+					visitor_country_of_origin=None
+				distance_from_home=row[33]
+				if distance_from_home=='':
+					distance_from_home=None
+				median_dwell=row[34]
+				if median_dwell=='':
+					median_dwell=None
+				bucketed_dwell_times=row[35]
+				if bucketed_dwell_times=='':
+					bucketed_dwell_times=None
+				related_same_day_brand=row[36]
+				if related_same_day_brand=='':
+					related_same_day_brand=None
+				related_same_week_brand=row[37]
+				if related_same_week_brand=='':
+					related_same_week_brand=None
+				device_type=row[38]
+				if device_type=='':
+					device_type=None
+				normalized_visits_by_state_scaling=row[39]
+				if normalized_visits_by_state_scaling=='':
+					normalized_visits_by_state_scaling=None
+				normalized_visits_by_region_naics_visits=row[40]
+				if normalized_visits_by_region_naics_visits=='':
+					normalized_visits_by_region_naics_visits=None
+				normalized_visits_by_region_naics_visitors=row[41]
+				if normalized_visits_by_region_naics_visitors=='':
+					normalized_visits_by_region_naics_visitors=None
+				normalized_visits_by_total_visits=row[42]
+				if normalized_visits_by_total_visits=='':
+					normalized_visits_by_total_visits=None
+				normalized_visits_by_total_visitors=row[43]
+				if normalized_visits_by_total_visitors=='':
+					normalized_visits_by_total_visitors=None
+					
 				if placekey!=None and date_range_start!=None:
-					print("Read: " + placekey.ljust(20,' ') + location_name.ljust(30,' ') + street_address.ljust(30,' ') + city.ljust(15,' ') + region.ljust(2,' ') + postal_code.ljust(6,' ') + date_range_start.ljust(10,' ') + raw_visitor_count.rjust(5,' '))
-					cur.execute('CALL addrecdb2(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-					(placekey,location_name,top_category,sub_category,naics_code,latitude,longitude,street_address,
-					city,region,postal_code,phone_number,date_range_start,date_range_end,raw_visitor_count));
+					print("Read: " + placekey.ljust(20,' ') + location_name.ljust(30,' ') + naics_code.ljust(30,' ') + city.ljust(15,' ') + region.ljust(2,' ') + street_address.ljust(6,' ') + date_range_start.ljust(10,' ') + raw_visitor_count.rjust(5,' '))
+					cur.execute('CALL addrecdb2(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+					(placekey,parent_placekey,location_name,safegraph_brand_ids,brands,top_category,sub_category,naics_code,
+					latitude,longitude,street_address,city,region,postal_code,iso_country_code,phone_number,open_hours,category_tags,
+					opened_on,closed_on,tracking_closed_since,geometry_type,date_range_start,date_range_end,raw_visit_counts,
+					raw_visitor_counts,visits_by_day,visits_by_hour,poi_cbg,visitor_home_cbgs,visitor_home_aggregation,visitor_daytime_cbgs,
+					visitor_country_of_origin,distance_from_home,median_dwell,bucketed_dwell_times,related_same_day_brand,
+					related_same_week_brand,device_type,normalized_visits_by_state_scaling,normalized_visits_by_region_naics_visits,
+					normalized_visits_by_region_naics_visitors,normalized_visits_by_total_visits,normalized_visits_by_total_visitors));
 
 	conn.commit()
 	cur.close()
@@ -318,7 +391,7 @@ def run_select():
 
 def output_save_csv():
 	sql='''
-	SELECT l.location_name,n.top_category,n.sub_category,l.street_address,l.city,l.region,l.postal_code,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count
+	SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count
 	FROM location_info l
 	JOIN visits_info v ON l.vid=v.vid
 	JOIN naics_codes n
@@ -335,8 +408,8 @@ def output_save_csv():
 			print("No records!")
 		else:
 			while row is not None:
-				writer.writerow({'Location':row['location_name'],'Top_Category':row['top_category'],'Sub_Category':row['sub_category'],'Address':row['street_address'],
-				'City':row['city'],'State':row['region'],'Zip_Code':row['postal_code'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_count']})
+				writer.writerow({'Location':row['location_name'],'Top_Category':row['top_category'],'Sub_Category':row['sub_category'],'Address':row['naics_code'],
+				'City':row['city'],'State':row['region'],'Zip_Code':row['street_address'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_count']})
 				print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_count']))
 				row=cur.fetchone()
 			print("\nWritten record(s) to: /var/lib/postgresql/scripts/Locations_records.csv\n")
@@ -348,7 +421,7 @@ def output_save_csv():
 
 def output_save_txt():
 	f=open('/var/lib/postgresql/scripts/Locations_records.txt','w')
-	sql="SELECT l.location_name,n.top_category,n.sub_category,l.street_address,l.city,l.region,l.postal_code,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
+	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute(sql)
@@ -357,8 +430,8 @@ def output_save_txt():
 		print("No records!")
 	else:
 		while row is not None:
-			f.write(row['location_name'].ljust(30," ") + row['top_category'].ljust(63," ") + str(row['sub_category']).ljust(70," ") + row['street_address'].ljust(39," ") +
-			row['city'].ljust(23," ") + row['region'].ljust(3," ") + row['postal_code'].ljust(6," ") + str(row['raw_visitor_count']).ljust(5," "))
+			f.write(row['location_name'].ljust(30," ") + row['top_category'].ljust(63," ") + str(row['sub_category']).ljust(70," ") + row['naics_code'].ljust(39," ") +
+			row['city'].ljust(23," ") + row['region'].ljust(3," ") + row['street_address'].ljust(6," ") + str(row['raw_visitor_count']).ljust(5," "))
 			f.write("\n")
 			print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_count']))
 			row=cur.fetchone()
