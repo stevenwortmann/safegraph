@@ -19,23 +19,23 @@ def wait_to_continue():
 def initialize_table():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
-	sql1 = ('''DROP TABLE IF EXISTS visits_info,location_info,brands_info,naics_codes;
+	sql1 = ('''DROP TABLE IF EXISTS visitsInfo,locationInfo,brandsInfo,naicsCodes;
 
-	CREATE TABLE naics_codes (
+	CREATE TABLE naicsCodes (
 		nid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		top_category VARCHAR(100) NOT NULL,
 		sub_category VARCHAR(100),
 		naics_code VARCHAR(20)
 		);
 
-	CREATE TABLE brands_info (
+	CREATE TABLE brandsInfo (
 		bid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		safegraph_brand_ids VARCHAR(100),
 		brands VARCHAR(100),
-		nid INT REFERENCES naics_codes (nid) ON DELETE CASCADE
+		nid INT REFERENCES naicsCodes (nid) ON DELETE CASCADE
 		);
 
-	CREATE TABLE visits_info (
+	CREATE TABLE visitsInfo (
 		vid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		placekey VARCHAR(20) NOT NULL,
 		date_range_start VARCHAR(30) NOT NULL,
@@ -61,14 +61,14 @@ def initialize_table():
 		normalized_visits_by_total_visitors FLOAT
 		);
 
-	CREATE TABLE location_info (
+	CREATE TABLE locationInfo (
 		locid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		placekey VARCHAR(20) NOT NULL,
 		parent_placekey VARCHAR(20),
 		location_name VARCHAR(100) NOT NULL,
-		vid INT REFERENCES visits_info (vid) ON DELETE CASCADE,
-		nid INT REFERENCES naics_codes (nid) ON DELETE CASCADE,
-		bid INT REFERENCES brands_info (bid) ON DELETE CASCADE,
+		vid INT REFERENCES visitsInfo (vid) ON DELETE CASCADE,
+		nid INT REFERENCES naicsCodes (nid) ON DELETE CASCADE,
+		bid INT REFERENCES brandsInfo (bid) ON DELETE CASCADE,
 		latitude VARCHAR(15) NOT NULL,
 		longitude VARCHAR(15) NOT NULL,
 		naics_code VARCHAR(100) NOT NULL,
@@ -86,9 +86,9 @@ def initialize_table():
 		poi_cbg VARCHAR(20)
 		);
 
-	DROP PROCEDURE IF EXISTS addrecdb2;
+	DROP PROCEDURE IF EXISTS addSGrec;
 
-	CREATE PROCEDURE addrecdb2(
+	CREATE PROCEDURE addSGrec(
 		a_pk VARCHAR(20),
 		b_ppk VARCHAR(20),
 		c_lo VARCHAR(100),
@@ -142,10 +142,10 @@ def initialize_table():
 
 	BEGIN
 
-		IF (SELECT COUNT(*) FROM visits_info WHERE (placekey=a_pk AND date_range_start=w_ds))=1 THEN
-				SELECT vid INTO vidout FROM visits_info WHERE (placekey=a_pk AND date_range_start=w_ds);
+		IF (SELECT COUNT(*) FROM visitsInfo WHERE (placekey=a_pk AND date_range_start=w_ds))=1 THEN
+				SELECT vid INTO vidout FROM visitsInfo WHERE (placekey=a_pk AND date_range_start=w_ds);
 			ELSE
-				INSERT INTO visits_info(placekey,date_range_start,date_range_end,raw_visit_counts,
+				INSERT INTO visitsInfo(placekey,date_range_start,date_range_end,raw_visit_counts,
 										raw_visitor_counts,visits_by_day,visits_by_each_hour,visitor_home_cbgs,
 										visitor_home_aggregation,visitor_daytime_cbgs,visitor_country_of_origin,
 										distance_from_home,median_dwell,bucketed_dwell_times,related_same_day_brand,
@@ -157,26 +157,26 @@ def initialize_table():
 				SELECT LASTVAL() INTO vidout;
 			END IF;
 
-		IF (SELECT COUNT(*) FROM naics_codes WHERE naics_code=h_nc)=1 THEN
-				SELECT nid INTO nidout FROM naics_codes WHERE naics_code=h_nc;
+		IF (SELECT COUNT(*) FROM naicsCodes WHERE naics_code=h_nc)=1 THEN
+				SELECT nid INTO nidout FROM naicsCodes WHERE naics_code=h_nc;
 			ELSE
-				INSERT INTO naics_codes(top_category,sub_category,naics_code)
+				INSERT INTO naicsCodes(top_category,sub_category,naics_code)
 				VALUES (f_tc,g_sc,h_nc);
 				SELECT LASTVAL() INTO nidout;
 			END IF;
 
-		IF (SELECT COUNT(*) FROM brands_info WHERE safegraph_brand_ids=d_sbid)=1 THEN
-				SELECT bid INTO bidout FROM brands_info WHERE safegraph_brand_ids=d_sbid;
+		IF (SELECT COUNT(*) FROM brandsInfo WHERE safegraph_brand_ids=d_sbid)=1 THEN
+				SELECT bid INTO bidout FROM brandsInfo WHERE safegraph_brand_ids=d_sbid;
 			ELSE
-				INSERT INTO brands_info(safegraph_brand_ids,brands,nid)
+				INSERT INTO brandsInfo(safegraph_brand_ids,brands,nid)
 				VALUES (d_sbid,e_bds,nidout);
 				SELECT LASTVAL() INTO bidout;
 			END IF;
 
-		IF (SELECT COUNT(*) FROM location_info WHERE placekey=a_pk)=1 THEN
-				SELECT locid INTO locidout FROM location_info WHERE placekey=a_pk;
+		IF (SELECT COUNT(*) FROM locationInfo WHERE placekey=a_pk)=1 THEN
+				SELECT locid INTO locidout FROM locationInfo WHERE placekey=a_pk;
 			ELSE
-				INSERT INTO location_info(placekey,parent_placekey,location_name,vid,nid,bid,latitude,longitude,
+				INSERT INTO locationInfo(placekey,parent_placekey,location_name,vid,nid,bid,latitude,longitude,
 					naics_code,city,region,street_address,iso_country_code,phone_number,open_hours,category_tags,
 					opened_on,closed_on,tracking_closed_since,geometry_type,poi_cbg)
 				VALUES (a_pk,b_ppk,c_lo,vidout,nidout,bidout,i_lt,j_lg,k_sa,l_ci,m_rg,n_pc,
@@ -187,7 +187,7 @@ def initialize_table():
 	END; $$
 	language plpgsql;
 
-	call addrecdb2('224-223@63c-rjh-pd9','','La Cabra Craft Tacos','','','Restaurants and Other Eating Places','Full-Service Restaurants',
+	call addSGrec('224-223@63c-rjh-pd9','','La Cabra Craft Tacos','','','Restaurants and Other Eating Places','Full-Service Restaurants',
 	'722511','39.955599','-82.004667','1335 Linden Ave','Zanesville','OH','43701','US','17402978132',
 	'','Brunch,Mexican Food','','',
 	'2019-07','POLYGON','2022-04-18T00:00:00-04:00','2022-04-25T00:00:00-04:00','115','75','[13,16,19,13,17,24,13]',
@@ -200,7 +200,7 @@ def initialize_table():
 	'{"Walmart":40,"McDonalds":39,"Country Fair":32,"Kroger":28,"BP":25,"Sheetz":23,"Subway":23,"Duchess":21,"Taco Bell":17,"Speedway":16,"Dollar General":16,"Dairy Queen":16,"Wendys":12,"CVS":12,"Tim Hortons":12,"Marathon":12,"KFC":11,"Arbys":11,"Smoker Friendly":9,"Lowes":9}',
 	'{"android":27,"ios":47}','1319.3152211025','0.0000580570','0.0000730162','0.0000066229','0.0000154705');
 
-	call addrecdb2('222-222@63d-kqz-49z','','Burger King','SG_BRAND_60d8d6d29e2c4b14f4ea1983baefd36e','Burger King','Restaurants and Other Eating Places','Limited-Service Restaurants',
+	call addSGrec('222-222@63d-kqz-49z','','Burger King','SG_BRAND_60d8d6d29e2c4b14f4ea1983baefd36e','Burger King','Restaurants and Other Eating Places','Limited-Service Restaurants',
 	'722513','40.295395','-78.836567','440 Galleria Dr','Johnstown','PA','15904','US','18142627551',
 	'{ "Mon": [["6:00", "22:00"]], "Tue": [["6:00", "22:00"]], "Wed": [["6:00", "22:00"]], "Thu": [["6:00", "22:00"]], "Fri": [["6:00", "22:00"]], "Sat": [["6:00", "22:00"]], "Sun": [["6:00", "22:00"]] }','Counter Service,Late Night,Lunch,Fast Food,Drive Through,Breakfast,Dinner,Burgers','','',
 	'2019-07','POLYGON','2022-04-18T00:00:00-04:00','2022-04-25T00:00:00-04:00','98','83','[5,6,15,13,19,22,18]',
@@ -213,10 +213,10 @@ def initialize_table():
 	'{"Sheetz":66,"Walmart":45,"McDonalds":30,"Dollar General":29,"Dairy Queen":16,"Sunoco":16,"Subway":16,"ALDI":14,"Cricket Wireless":14,"Rite Aid":13,"Family Dollar Stores":13,"Taco Bell":12,"T.J. Maxx":11,"Dollar Tree":11,"AT&T":8,"Perkins Restaurant & Bakery":8,"Arbys":8,"IGA":7,"Primanti Bros.":7,"Wendys":7}',
 	'{"android":40,"ios":41}','1289.8365329770','0.0000671073','0.0000870675','0.0000066811','0.0000185553');
 
-	SELECT 'location_info',count(*) as Record_Count FROM location_info UNION ALL
-	SELECT 'brands_info',count(*) as Record_Count FROM brands_info UNION ALL
-	SELECT 'naics_codes',count(*) as Record_Count FROM naics_codes UNION ALL
-	SELECT 'visits_info',count(*) as Record_Count FROM visits_info;
+	SELECT 'locationInfo',count(*) as Record_Count FROM locationInfo UNION ALL
+	SELECT 'brandsInfo',count(*) as Record_Count FROM brandsInfo UNION ALL
+	SELECT 'naicsCodes',count(*) as Record_Count FROM naicsCodes UNION ALL
+	SELECT 'visitsInfo',count(*) as Record_Count FROM visitsInfo;
 	''')
 
 	cur.execute(sql1)
@@ -351,7 +351,7 @@ def run_csv_import():
 
 				if placekey!=None and date_range_start!=None:
 					print("Read: " + placekey.ljust(21,' ') + location_name[:25].ljust(30,' ') + street_address[:18].ljust(20,' ') + city[:14].ljust(15,' ') + region.ljust(4,' ') + postal_code.ljust(7,' ') + latitude.rjust(12,' ') + longitude.rjust(12,' ') + naics_code.rjust(10,' '))
-					cur.execute('CALL addrecdb2(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+					cur.execute('CALL addSGrec(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
 					(placekey,parent_placekey,location_name,safegraph_brand_ids,brands,top_category,sub_category,naics_code,
 					latitude,longitude,street_address,city,region,postal_code,iso_country_code,phone_number,open_hours,category_tags,
 					opened_on,closed_on,tracking_closed_since,geometry_type,date_range_start,date_range_end,raw_visit_counts,
