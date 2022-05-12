@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS visitsInfo,locationInfo,brandsInfo,naicsCodes;
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 CREATE TABLE naicsCodes (
 	nid INT IDENTITY() AS IDENTITY PRIMARY KEY,
 	top_category VARCHAR(100) NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE naicsCodes (
 	naics_code VARCHAR(20)
 	);
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 CREATE TABLE brandsInfo (
 	bid INT IDENTITY() AS IDENTITY PRIMARY KEY,
 	safegraph_brand_ids VARCHAR(100),
@@ -16,7 +16,7 @@ CREATE TABLE brandsInfo (
 	nid INT REFERENCES naicsCodes (nid) ON DELETE CASCADE
 	);
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 CREATE TABLE visitsInfo (
 	vid INT IDENTITY() AS IDENTITY PRIMARY KEY,
 	placekey VARCHAR(20) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE visitsInfo (
 	normalized_visits_by_total_visitors FLOAT
 	);
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 CREATE TABLE locationInfo (
 	locid INT IDENTITY() AS IDENTITY PRIMARY KEY,
 	placekey VARCHAR(20) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE locationInfo (
 
 DROP PROCEDURE IF EXISTS addSGrec;
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 CREATE PROCEDURE addSGrec(
 	@a_pk VARCHAR(20),
 	@b_ppk VARCHAR(20),
@@ -127,7 +127,7 @@ DECLARE @vidout INT;
 BEGIN
 
 	IF (SELECT COUNT(*) FROM visitsInfo WHERE (placekey=a_pk AND date_range_start=w_ds))=1 BEGIN
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @vidout = vid FROM visitsInfo WHERE (placekey=a_pk AND date_range_start=w_ds);
 		END
 		ELSE BEGIN
@@ -140,34 +140,34 @@ BEGIN
 									normalized_visits_by_total_visits,normalized_visits_by_total_visitors)
 			VALUES (a_pk,w_ds,x_de,y_rvt,z_rvr,aa_vbd,ab_vbh,ad_vhc,ae_vha,af_vdc,ag_vco,ah_dfh,ai_md,aj_bdt,ak_rsd,
 					al_rsw,am_dt,an_nvss,ao_nvrnt,ap_nvnvr,aq_nvtvt,ar_nvtv);
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @vidout = LASTVAL();
 		END
 
 	IF (SELECT COUNT(*) FROM naicsCodes WHERE naics_code=h_nc)=1 BEGIN
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @nidout = nid FROM naicsCodes WHERE naics_code=h_nc;
 		END
 		ELSE BEGIN
 			INSERT INTO naicsCodes(top_category,sub_category,naics_code)
 			VALUES (f_tc,g_sc,h_nc);
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @nidout = LASTVAL();
 		END
 
 	IF (SELECT COUNT(*) FROM brandsInfo WHERE safegraph_brand_ids=d_sbid)=1 BEGIN
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @bidout = bid FROM brandsInfo WHERE safegraph_brand_ids=d_sbid;
 		END
 		ELSE BEGIN
 			INSERT INTO brandsInfo(safegraph_brand_ids,brands,nid)
 			VALUES (d_sbid,e_bds,@nidout);
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @bidout = LASTVAL();
 		END
 
 	IF (SELECT COUNT(*) FROM locationInfo WHERE placekey=a_pk)=1 BEGIN
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @locidout = locid FROM locationInfo WHERE placekey=a_pk;
 		END
 		ELSE BEGIN
@@ -176,7 +176,7 @@ BEGIN
 				opened_on,closed_on,tracking_closed_since,geometry_type,poi_cbg)
 			VALUES (a_pk,b_ppk,c_lo,@vidout,@nidout,@bidout,i_lt,j_lg,k_sa,l_ci,m_rg,n_pc,
 					o_cy,p_pn,q_op,r_ct,s_oo,t_co,u_ts,v_gt,ac_cbg);
-			-- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 			SELECT @locidout = LASTVAL();
 		END
 
@@ -209,11 +209,11 @@ call addSGrec('222-222@63d-kqz-49z','','Burger King','SG_BRAND_60d8d6d29e2c4b14f
 '{"Sheetz":66,"Walmart":45,"McDonalds":30,"Dollar General":29,"Dairy Queen":16,"Sunoco":16,"Subway":16,"ALDI":14,"Cricket Wireless":14,"Rite Aid":13,"Family Dollar Stores":13,"Taco Bell":12,"T.J. Maxx":11,"Dollar Tree":11,"AT&T":8,"Perkins Restaurant & Bakery":8,"Arbys":8,"IGA":7,"Primanti Bros.":7,"Wendys":7}',
 '{"android":40,"ios":41}','1289.8365329770','0.0000671073','0.0000870675','0.0000066811','0.0000185553');
 
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 SELECT 'locationInfo',count(*) as Record_Count FROM locationInfo UNION ALL
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 SELECT 'brandsInfo',count(*) as Record_Count FROM brandsInfo UNION ALL
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 SELECT 'naicsCodes',count(*) as Record_Count FROM naicsCodes UNION ALL
--- SQLINES LICENSE FOR EVALUATION USE ONLY
+
 SELECT 'visitsInfo',count(*) as Record_Count FROM visitsInfo;
