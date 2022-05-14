@@ -231,7 +231,7 @@ def run_csv_import():
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor()
 
-	with open('/var/lib/postgresql/scripts/safegraph/Book2.csv','r') as read_obj:
+	with open('/home/steve/github/safegraph/Book2.csv','r') as read_obj:
 		# pass the file object to reader() to get the reader object
 		csv_reader = reader(read_obj)
 		header=next(csv_reader)
@@ -421,7 +421,8 @@ def run_select():
 
 def output_save_csv():
 	sql='''
-	SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count
+	SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,
+	substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_counts
 	FROM location_info l
 	JOIN visits_info v ON l.vid=v.vid
 	JOIN naics_codes n
@@ -430,7 +431,7 @@ def output_save_csv():
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute(sql)
 	row=cur.fetchone();
-	with open('/var/lib/postgresql/scripts/safegraph/Locations_records.csv','w',newline='') as csvfile:
+	with open('/home/steve/github/safegraph/Locations_records.csv','w',newline='') as csvfile:
 		fieldnames = ['Location','Top_Category','Sub_Category','Address','City','State','Zip_Code','Week_Of','Number_Visitors']
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writeheader()
@@ -439,10 +440,10 @@ def output_save_csv():
 		else:
 			while row is not None:
 				writer.writerow({'Location':row['location_name'],'Top_Category':row['top_category'],'Sub_Category':row['sub_category'],'Address':row['naics_code'],
-				'City':row['city'],'State':row['region'],'Zip_Code':row['street_address'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_count']})
-				print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_count']))
+				'City':row['city'],'State':row['region'],'Zip_Code':row['street_address'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_counts']})
+				print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_counts']))
 				row=cur.fetchone()
-			print("\nWritten record(s) to: /var/lib/postgresql/scripts/safegraph/Locations_records.csv\n")
+			print("\nWritten record(s) to: /Locations_records.csv\n")
 	cur.close
 	conn.close
 	wait_to_continue()
@@ -450,7 +451,7 @@ def output_save_csv():
 
 
 def output_save_txt():
-	f=open('/var/lib/postgresql/scripts/Locations_records.txt','w')
+	f=open('/home/steve/github/safegraph/Locations_records.txt','w')
 	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
