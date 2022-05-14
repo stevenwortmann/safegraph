@@ -441,9 +441,9 @@ def output_save_csv():
 			while row is not None:
 				writer.writerow({'Location':row['location_name'],'Top_Category':row['top_category'],'Sub_Category':row['sub_category'],'Address':row['naics_code'],
 				'City':row['city'],'State':row['region'],'Zip_Code':row['street_address'],'Week_Of':row['date_range_start'],'Number_Visitors':row['raw_visitor_counts']})
-				print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_counts']))
+				print("Writing record... " + row['location_name'][:25].ljust(30,' ') + row['date_range_start'])
 				row=cur.fetchone()
-			print("\nWritten record(s) to: /Locations_records.csv\n")
+			print("\nWritten record(s) to: Locations_records.csv\n")
 	cur.close
 	conn.close
 	wait_to_continue()
@@ -452,7 +452,7 @@ def output_save_csv():
 
 def output_save_txt():
 	f=open('/home/steve/github/safegraph/Locations_records.txt','w')
-	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_count FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
+	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_counts FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute(sql)
@@ -462,11 +462,11 @@ def output_save_txt():
 	else:
 		while row is not None:
 			f.write(row['location_name'].ljust(30," ") + row['top_category'].ljust(63," ") + str(row['sub_category']).ljust(70," ") + row['naics_code'].ljust(39," ") +
-			row['city'].ljust(23," ") + row['region'].ljust(3," ") + row['street_address'].ljust(6," ") + str(row['raw_visitor_count']).ljust(5," "))
+			row['city'].ljust(23," ") + row['region'].ljust(3," ") + row['street_address'].ljust(6," ") + str(row['raw_visitor_counts']).ljust(5," "))
 			f.write("\n")
-			print("Writing record... " + row['location_name'] + row['date_range_start'] + str(row['raw_visitor_count']))
+			print("Writing record... " + row['location_name'][:25].ljust(30,' ') + row['date_range_start'])
 			row=cur.fetchone()
-		print("\nWritten record(s) to: /var/lib/postgresql/scripts/Locations_records.txt\n")
+		print("\nWritten record(s) to: Locations_records.txt\n")
 	cur.close
 	conn.close
 	wait_to_continue()
