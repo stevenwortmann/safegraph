@@ -1,5 +1,5 @@
 import psycopg2
-import psycopg2.extras
+from psycopg2.extras import RealDictCursor
 import os
 import csv
 from csv import reader
@@ -375,23 +375,46 @@ def run_csv_import():
 
 
 def run_select():
+	print('\n')
 	print("Running the select routine!")
-	sql="SELECT v.placekey,n.naics_code,l.latitude,l.longitude,substring(date_range_start,1,10) date_range_start,raw_visitor_counts FROM visits_info v JOIN location_info l ON v.vid=l.vid AND v.placekey=l.placekey JOIN naics_codes n ON l.nid=n.nid;"
+	print('\n')
+	sql='''
+	SELECT v.placekey,l.location_name,n.naics_code,l.latitude,l.longitude,substring(v.date_range_start,1,10) date_range_start,
+	cast(v.normalized_visits_by_state_scaling as int)number_visitors
+	FROM visits_info v
+	JOIN location_info l
+	ON v.vid=l.vid
+	AND v.placekey=l.placekey
+	JOIN naics_codes n
+	ON l.nid=n.nid;
+	'''
 	conn=psycopg2.connect(connstring)
-#	cur=conn.cursor()
-	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-	cur.execute(sql)
-	row=cur.fetchone();
-	print("Rowcount: ", cur.rowcount)
-	if row==None:
+	body_cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+	body_cur.execute(sql)
+
+	col_cur=conn.cursor(cursor_factory=RealDictCursor)
+	col_cur.execute('''SELECT 'placekey' as placekey, 'location_name' as location_name, 'naics' as naics,
+	'latitude' as latitude, 'longitude' as longitude, 'week_of' as week_of, 'visitor_count' as visitor_count
+	''')
+	col_row=col_cur.fetchone()
+	print(col_row['placekey'].ljust(21,' ') + col_row['location_name'][:25].ljust(30,' ') + col_row['naics'].ljust(8,' ') + col_row['latitude'].ljust(11,' ') +
+	col_row['longitude'].ljust(12,' ') + col_row['week_of'].ljust(12,' ') + str(col_row['visitor_count']).ljust(5,' '))
+	print('-----------------------------------------------------------------------------------------------------------')
+	body_row=body_cur.fetchone();
+	#print("Rowcount: ", cur.rowcount)
+	if body_row==None:
 		print("No records!")
 	else:
-		while row is not None:
-			print(row['placekey'].ljust(20,' ') + row['naics_code'].ljust(7,' ') + row['latitude'].ljust(11,' ') +
-			row['longitude'].ljust(11,' ') + row['date_range_start'].ljust(10,' ') + str(row['raw_visitor_counts']).ljust(5,' '))
-			row=cur.fetchone()
-	cur.close
+		while body_row is not None:
+			print(body_row['placekey'].ljust(21,' ') + body_row['location_name'][:25].ljust(30,' ') + body_row['naics_code'].ljust(8,' ') + body_row['latitude'].ljust(11,' ') +
+			body_row['longitude'].ljust(12,' ') + body_row['date_range_start'].ljust(12,' ') + str(body_row['number_visitors']).ljust(5,' '))
+			body_row=body_cur.fetchone()
+	col_cur.close
+	body_cur.close
 	conn.close
+	print('-----------------------------------------------------------------------------------------------------------')
+	print("Row Count: ", body_cur.rowcount)
+	print('\n')
 	wait_to_continue()
 
 
