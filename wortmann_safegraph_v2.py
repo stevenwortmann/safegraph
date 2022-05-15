@@ -582,6 +582,7 @@ def aggregate():
 	col_cur.close
 	body_cur.close
 	conn.close
+
 	wait_to_continue()
 
 
@@ -594,7 +595,7 @@ while loop==True:
 	print("Enter 1 to initialize the table.")
 	print("Enter 2 to import csv.\n")
 	print("Enter 3 to select all records.")
-	print("Enter 4 to run an aggregate....\n")
+	print("Enter 4 to select aggregated records.\n")
 	print("Enter 5 to output .csv file.")
 	print("Enter 6 to output .txt file.")
 	print("Enter 7 to quit.\n")
