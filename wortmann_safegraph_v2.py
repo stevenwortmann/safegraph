@@ -481,6 +481,8 @@ def aggregate():
 	print("Running the aggregate routines!")
 	print('\n')
 
+# Aggregate 1
+
 	print("Aggregating visitor foot traffic by business type (NAICS code)\n")
 
 	col_cur.execute('''SELECT 'naics' as naics, 'top_category' as top_category,
@@ -499,7 +501,7 @@ def aggregate():
 
 	print(col_row['naics'].ljust(8,' ') + col_row['top_category'].ljust(40,' ') +
 	col_row['sub_category'].ljust(40,' ') + col_row['number_visitors'].ljust(12,' '))
-	print('--------------------------------------------------------------------------------------------------------')
+	print('-------------------------------------------------------------------------------------------------------')
 	if body_row==None:
 		print("No records!")
 	else:
@@ -507,9 +509,43 @@ def aggregate():
 			print(str(body_row['naics_code']).ljust(8,' ') + str(body_row['top_category'])[:38].ljust(40,' ') +
 			str(body_row['sub_category'])[:38].ljust(40,' ') + str(body_row['number_visitors']).ljust(12,' '))
 			body_row=body_cur.fetchone()
-	print('--------------------------------------------------------------------------------------------------------')
+	print('-------------------------------------------------------------------------------------------------------')
 	print("Row Count: ", body_cur.rowcount)
 	print('\n')
+
+# Aggregate 2
+
+	print("Aggregating visitor foot traffic by Brand Name --- TOP 20\n")
+
+	col_cur.execute('''SELECT 'brand' as brand,'naics' as naics, 'number_visitors' as number_visitors''')
+	col_row=col_cur.fetchone()
+
+	sql2='''
+	SELECT b.brands,sum(cast(normalized_visits_by_state_scaling as int)) as number_visitors
+	FROM locationInfo l
+	JOIN visitsInfo v ON v.vid=l.vid
+	JOIN brandsInfo b ON b.bid=l.bid
+	GROUP BY b.brands
+	ORDER BY number_visitors desc
+	FETCH FIRST 20 ROWS ONLY;
+	'''
+
+	body_cur.execute(sql2)
+	body_row=body_cur.fetchone();
+
+	print(col_row['brand'].ljust(21,' ') + col_row['number_visitors'].ljust(12,' '))
+	print('------------------------------------')
+	if body_row==None:
+		print("No records!")
+	else:
+		while body_row is not None:
+			print(str(body_row['brands'])[:19].ljust(21,' ') + str(body_row['number_visitors']).ljust(12,' '))
+			body_row=body_cur.fetchone()
+	print('------------------------------------')
+	print("Row Count: ", body_cur.rowcount)
+	print('\n')
+
+# Aggregate 3
 
 	print("Aggregating visitor foot traffic by census block group (CBG) --- TOP 20\n")
 
@@ -517,7 +553,7 @@ def aggregate():
 	'state' as state, 'number_visitors' as number_visitors''')
 	col_row=col_cur.fetchone()
 
-	sql2='''
+	sql3='''
 	SELECT l.poi_cbg census_block,l.city,l.region state,sum(cast(normalized_visits_by_state_scaling as int)) as number_visitors
 	FROM locationInfo l
 	JOIN visitsInfo v ON v.vid=l.vid
@@ -526,7 +562,7 @@ def aggregate():
 	FETCH FIRST 20 ROWS ONLY;
 	'''
 
-	body_cur.execute(sql2)
+	body_cur.execute(sql3)
 	body_row=body_cur.fetchone();
 
 	print(col_row['census_block'].ljust(14,' ') + col_row['city'].ljust(20,' ') +
@@ -552,26 +588,28 @@ def aggregate():
 
 loop=True
 while loop==True:
-	print("Running Menu!")
-	print("Enter 1 to select.")
-	print("Enter 2 to initialize the table.")
-	print("Enter 3 to import csv.")
-	print("Enter 4 to output a csv.")
-	print("Enter 5 to output a text file.")
-	print("Enter 6 to run an aggregate....")
-	print("Enter 7 to quit.")
+	print('''
+	\n\nSafegraph "Patterns" Geospatial Database\n\n
+	''')
+	print("Enter 1 to initialize the table.")
+	print("Enter 2 to import csv.\n")
+	print("Enter 3 to select all records.")
+	print("Enter 4 to run an aggregate....\n")
+	print("Enter 5 to output .csv file.")
+	print("Enter 6 to output .txt file.")
+	print("Enter 7 to quit.\n")
 	choice=input("Enter choice: ")
 	if choice=="1":
-		run_select()
-	elif choice=="2":
 		initialize_table()
-	elif choice=="3":
+	elif choice=="2":
 		run_csv_import()
+	elif choice=="3":
+		run_select()
 	elif choice=="4":
-		output_save_csv()
-	elif choice=="5":
-		output_save_txt()
-	elif choice=="6":
 		aggregate()
+	elif choice=="5":
+		output_save_csv()
+	elif choice=="6":
+		output_save_txt()
 	elif choice=="7":
 		loop=False;
