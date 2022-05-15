@@ -474,8 +474,78 @@ def output_save_txt():
 
 
 def aggregate():
-#Good spot for you to do some adaptation here!
-	print("aggregate module ran")
+	conn=psycopg2.connect(connstring)
+	body_cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+	col_cur=conn.cursor(cursor_factory=RealDictCursor)
+	print('\n')
+	print("Running the aggregate routines!")
+	print('\n')
+
+	print("Aggregating visitor foot traffic by business type (NAICS code)\n")
+
+	col_cur.execute('''SELECT 'naics' as naics, 'top_category' as top_category,
+	'sub_category' as sub_category, 'number_visitors' as number_visitors''')
+	col_row=col_cur.fetchone()
+
+	sql1='''
+	SELECT n.naics_code,n.top_category,n.sub_category,sum(cast(normalized_visits_by_state_scaling as int)) as number_visitors
+	FROM naicsCodes n
+	JOIN locationInfo l ON n.nid=l.nid
+	JOIN visitsInfo v ON v.vid=l.vid
+	GROUP BY n.naics_code,n.top_category,n.sub_category ORDER BY number_visitors desc;'''
+
+	body_cur.execute(sql1)
+	body_row=body_cur.fetchone();
+
+	print(col_row['naics'].ljust(8,' ') + col_row['top_category'].ljust(40,' ') +
+	col_row['sub_category'].ljust(40,' ') + col_row['number_visitors'].ljust(12,' '))
+	print('--------------------------------------------------------------------------------------------------------')
+	if body_row==None:
+		print("No records!")
+	else:
+		while body_row is not None:
+			print(str(body_row['naics_code']).ljust(8,' ') + str(body_row['top_category'])[:38].ljust(40,' ') +
+			str(body_row['sub_category'])[:38].ljust(40,' ') + str(body_row['number_visitors']).ljust(12,' '))
+			body_row=body_cur.fetchone()
+	print('--------------------------------------------------------------------------------------------------------')
+	print("Row Count: ", body_cur.rowcount)
+	print('\n')
+
+	print("Aggregating visitor foot traffic by census block group (CBG) --- TOP 20\n")
+
+	col_cur.execute('''SELECT 'census_block' as census_block, 'city' as city,
+	'state' as state, 'number_visitors' as number_visitors''')
+	col_row=col_cur.fetchone()
+
+	sql2='''
+	SELECT l.poi_cbg census_block,l.city,l.region state,sum(cast(normalized_visits_by_state_scaling as int)) as number_visitors
+	FROM locationInfo l
+	JOIN visitsInfo v ON v.vid=l.vid
+	GROUP BY l.poi_cbg,l.city,l.region
+	ORDER BY number_visitors desc
+	FETCH FIRST 20 ROWS ONLY;
+	'''
+
+	body_cur.execute(sql2)
+	body_row=body_cur.fetchone();
+
+	print(col_row['census_block'].ljust(14,' ') + col_row['city'].ljust(20,' ') +
+	col_row['number_visitors'].ljust(12,' '))
+	print('-------------------------------------------------')
+	if body_row==None:
+		print("No records!")
+	else:
+		while body_row is not None:
+			print(str(body_row['census_block']).ljust(14,' ') + str(body_row['city'])[:13].ljust(14,' ') +
+			body_row['state'].ljust(6,' ') + str(body_row['number_visitors']).ljust(12,' '))
+			body_row=body_cur.fetchone()
+	print('-------------------------------------------------')
+	print("Row Count: ", body_cur.rowcount)
+	print('\n')
+
+	col_cur.close
+	body_cur.close
+	conn.close
 	wait_to_continue()
 
 
@@ -488,8 +558,8 @@ while loop==True:
 	print("Enter 3 to import csv.")
 	print("Enter 4 to output a csv.")
 	print("Enter 5 to output a text file.")
-#	print("Enter 6 to run an aggregate report (placeholder).")
-	print("Enter 6 to quit.")
+	print("Enter 6 to run an aggregate....")
+	print("Enter 7 to quit.")
 	choice=input("Enter choice: ")
 	if choice=="1":
 		run_select()
@@ -501,7 +571,7 @@ while loop==True:
 		output_save_csv()
 	elif choice=="5":
 		output_save_txt()
-#	elif choice=="6":
-#		aggregate()
 	elif choice=="6":
+		aggregate()
+	elif choice=="7":
 		loop=False;
