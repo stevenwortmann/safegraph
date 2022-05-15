@@ -211,9 +211,6 @@ call addSGrec('222-222@63d-kqz-49z','','Burger King','SG_BRAND_60d8d6d29e2c4b14f
 
 
 SELECT 'locationInfo',count(*) as Record_Count FROM locationInfo UNION ALL
-
 SELECT 'brandsInfo',count(*) as Record_Count FROM brandsInfo UNION ALL
-
 SELECT 'naicsCodes',count(*) as Record_Count FROM naicsCodes UNION ALL
-
 SELECT 'visitsInfo',count(*) as Record_Count FROM visitsInfo;

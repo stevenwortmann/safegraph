@@ -360,10 +360,10 @@ def run_csv_import():
 					related_same_week_brand,device_type,normalized_visits_by_state_scaling,normalized_visits_by_region_naics_visits,
 					normalized_visits_by_region_naics_visitors,normalized_visits_by_total_visits,normalized_visits_by_total_visitors));
 
-	sql1 = ('''SELECT 'location_info',count(*) as Record_Count FROM location_info UNION ALL
-	SELECT 'brands_info',count(*) as Record_Count FROM brands_info UNION ALL
-	SELECT 'naics_codes',count(*) as Record_Count FROM naics_codes UNION ALL
-	SELECT 'visits_info',count(*) as Record_Count FROM visits_info;
+	sql1 = ('''SELECT 'locationInfo',count(*) as Record_Count FROM locationInfo UNION ALL
+	SELECT 'brandsInfo',count(*) as Record_Count FROM brandsInfo UNION ALL
+	SELECT 'naicsCodes',count(*) as Record_Count FROM naicsCodes UNION ALL
+	SELECT 'visitsInfo',count(*) as Record_Count FROM visitsInfo;
 	''')
 
 	cur.execute(sql1)
@@ -381,11 +381,11 @@ def run_select():
 	sql='''
 	SELECT v.placekey,l.location_name,n.naics_code,l.latitude,l.longitude,substring(v.date_range_start,1,10) date_range_start,
 	cast(v.normalized_visits_by_state_scaling as int)number_visitors
-	FROM visits_info v
-	JOIN location_info l
+	FROM visitsInfo v
+	JOIN locationInfo l
 	ON v.vid=l.vid
 	AND v.placekey=l.placekey
-	JOIN naics_codes n
+	JOIN naicsCodes n
 	ON l.nid=n.nid;
 	'''
 	conn=psycopg2.connect(connstring)
@@ -423,9 +423,9 @@ def output_save_csv():
 	sql='''
 	SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,
 	substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_counts
-	FROM location_info l
-	JOIN visits_info v ON l.vid=v.vid
-	JOIN naics_codes n
+	FROM locationInfo l
+	JOIN visitsInfo v ON l.vid=v.vid
+	JOIN naicsCodes n
 	on n.nid=l.nid;'''
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -452,7 +452,7 @@ def output_save_csv():
 
 def output_save_txt():
 	f=open('/home/steve/github/safegraph/Locations_records.txt','w')
-	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_counts FROM location_info l JOIN visits_info v ON l.vid=v.vid JOIN naics_codes n on n.nid=l.nid;"
+	sql="SELECT l.location_name,n.top_category,n.sub_category,l.naics_code,l.city,l.region,l.street_address,substring(v.date_range_start,1,10) date_range_start,v.raw_visitor_counts FROM locationInfo l JOIN visitsInfo v ON l.vid=v.vid JOIN naicsCodes n on n.nid=l.nid;"
 	conn=psycopg2.connect(connstring)
 	cur=conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute(sql)
